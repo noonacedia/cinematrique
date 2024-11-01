@@ -46,3 +46,7 @@ func Unique(values []string) bool {
 	}
 	return len(values) == len(uniqueValues)
 }
+
+func (v *Validator) Positive(number int) bool {
+	return number > 0
+}
