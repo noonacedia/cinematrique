@@ -67,22 +67,11 @@ func (app *application) listMoviesHandler(w http.ResponseWriter, r *http.Request
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
-	movies, err := app.models.Movies.GetAll(input.Title, input.Genres, input.Filters)
+	movies, metadata, err := app.models.Movies.GetAll(input.Title, input.Genres, input.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
-	temp_resp := struct {
-		Queries struct {
-			Title  string
-			Genres []string
-			data.Filters
-		}
-		Movies []data.Movie
-	}{
-		Queries: input,
-		Movies:  movies,
-	}
-	err = app.writeJSON(w, http.StatusOK, envelope{"movies": temp_resp}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"movies": movies, "metadata": metadata}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

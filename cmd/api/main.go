@@ -12,6 +12,7 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/noonacedia/cinematrique/internal/data"
+	"github.com/noonacedia/cinematrique/internal/jsonlog"
 )
 
 const version = "1.0.0"
@@ -29,7 +30,7 @@ type config struct {
 
 type application struct {
 	config config
-	logger *log.Logger
+	logger *jsonlog.Logger
 	models data.Models
 }
 
@@ -43,13 +44,13 @@ func main() {
 	flag.DurationVar(&cfg.db.maxIdleTime, "db-max-idle-time", time.Duration(time.Minute*15), "PostgreSQL max connection idle time")
 	flag.Parse()
 
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 	db, err := openDB(cfg)
 	if err != nil {
-		logger.Fatal(err)
+		logger.PrintFatal(err, nil)
 	}
 	defer db.Close()
-	logger.Printf("db connection pool established")
+	logger.PrintInfo("db connection pool established", nil)
 	app := &application{
 		config: cfg,
 		logger: logger,
@@ -61,11 +62,12 @@ func main() {
 		ReadTimeout:  1 * time.Second,
 		WriteTimeout: 2 * time.Second,
 		IdleTimeout:  1 * time.Minute,
+		ErrorLog:     log.New(app.logger, "", 0),
 	}
-	logger.Printf("starting %s server on %s", cfg.env, server.Addr)
+	logger.PrintInfo("starting server", map[string]string{"env": cfg.env, "addr": server.Addr})
 	err = server.ListenAndServe()
 	if err != nil {
-		logger.Fatal(err)
+		logger.PrintFatal(err, nil)
 	}
 }
 
