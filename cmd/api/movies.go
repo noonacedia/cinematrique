@@ -49,6 +49,7 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) listMoviesHandler(w http.ResponseWriter, r *http.Request) {
+	panic("oops I did it again")
 	var input struct {
 		Title  string
 		Genres []string
