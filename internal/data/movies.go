@@ -179,17 +179,16 @@ func (m MockMovieModel) Delete(id int64) error {
 }
 
 func ValidateMovie(v *validator.Validator, m *Movie) {
-	// validate Title
 	v.Check(m.Title != "", "title", "must be provided")
 	v.Check(len(m.Title) <= 500, "title", "must not be more than 500 bytes long")
-	// validate Year
+
 	v.Check(m.Year != 0, "year", "must be provided")
 	v.Check(m.Year >= 1888, "year", "must be greater than 1888")
 	v.Check(m.Year <= int32(time.Now().Year()), "year", "must not be in the future")
-	// validate Runtime
+
 	v.Check(m.Runtime != 0, "runtime", "must be provided")
 	v.Check(m.Runtime > 0, "runtime", "must be a positive integer")
-	// validate Genres
+
 	v.Check(m.Genres != nil, "genres", "must be provided")
 	v.Check(len(m.Genres) >= 1, "genres", "must contain at least 1 genre")
 	v.Check(len(m.Genres) <= 5, "genres", "must not contain more than 5 genres")
