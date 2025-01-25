@@ -14,6 +14,34 @@ var (
 	ErrDuplicateEmail = errors.New("duplicate email")
 )
 
+type password struct {
+	plaintext *string
+	hash      []byte
+}
+
+func (p *password) Set(plaintextPassword string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12)
+	if err != nil {
+		return err
+	}
+	p.plaintext = &plaintextPassword
+	p.hash = hash
+	return nil
+}
+
+func (p *password) Matches(plaintextPassword string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword(p.hash, []byte(plaintextPassword))
+	if err != nil {
+		switch {
+		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
+			return false, nil
+		default:
+			return false, err
+		}
+	}
+	return true, nil
+}
+
 type User struct {
 	ID        int64     `json:"id"`
 	Name      string    `json:"name"`
@@ -40,7 +68,7 @@ func (m UserModel) Insert(u *User) error {
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&u.ID, &u.CreatedAt, &u.Version)
 	if err != nil {
 		switch {
-		case err.Error() == `pq: duplicate key value violates constraint "users_email_key"`:
+		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
 			return ErrDuplicateEmail
 		default:
 			return err
@@ -115,34 +143,6 @@ func (m MockUserModel) Update(u *User) error {
 	return nil
 }
 
-type password struct {
-	plaintext *string
-	hash      []byte
-}
-
-func (p *password) Set(plaintextPassword string) error {
-	hash, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12)
-	if err != nil {
-		return err
-	}
-	p.plaintext = &plaintextPassword
-	p.hash = hash
-	return nil
-}
-
-func (p *password) Matches(plaintextPassword string) (bool, error) {
-	err := bcrypt.CompareHashAndPassword(p.hash, []byte(plaintextPassword))
-	if err != nil {
-		switch {
-		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
-			return false, nil
-		default:
-			return false, err
-		}
-	}
-	return true, nil
-}
-
 func ValidateEmail(v *validator.Validator, email string) {
 	v.Check(email != "", "email", "email cannot be empty")
 	v.Check(validator.Matches(email, validator.EmailRx), "email", "email should be in common format")
@@ -150,13 +150,13 @@ func ValidateEmail(v *validator.Validator, email string) {
 
 func ValidateName(v *validator.Validator, name string) {
 	v.Check(name != "", "name", "name cannot be empty")
-	v.Check(len(name) < 500, "name", "name is too long")
+	v.Check(len(name) <= 500, "name", "name is too long")
 }
 
 func ValidatePasswordPlainText(v *validator.Validator, password string) {
 	v.Check(password != "", "password", "password must be presented")
 	v.Check(
-		len(password) > 8 && len(password) < 72,
+		len(password) >= 8 && len(password) <= 72,
 		"password", "password should have between 8 and 72 bytes",
 	)
 }
