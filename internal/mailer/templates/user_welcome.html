@@ -1,0 +1,29 @@
+{{define "subject"}}Welcome to Cinematrique!{{end}}
+
+
+{{define "plainBody"}}
+Hi, 
+
+Thanks for joining to Cinematrique. You'll find here some usefull data about movies.
+For future reference, your user ID is {{.ID}}
+
+Thanks,
+Cinematrique
+{{end}}
+
+{{define "htmlBody"}}
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device.width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+    <p>Hi,</p>
+    <p>Thanks for joining to Cinematrique. You'll find here some usefull data about movies.</p>
+    <p>For future reference, your user ID is {{.ID}}</p>
+    <p>Thanks,</p>
+    <p>Cinematrique</p>
+</body>
+</html>
+{{end}}
