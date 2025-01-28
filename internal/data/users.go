@@ -80,7 +80,7 @@ func (m UserModel) Insert(u *User) error {
 func (m UserModel) GetByEmail(email string) (*User, error) {
 	query := `
   SELECT id, name, email, password_hash, activated, version, created_at
-  FROM users WHERE email == $1
+  FROM users WHERE email = $1
   `
 	var user User
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
